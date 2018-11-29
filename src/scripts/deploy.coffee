@@ -71,11 +71,15 @@ module.exports = (robot) ->
     hosts = (msg.match[6]||'')
 
     username = msg.envelope.user.githubLogin or msg.envelope.user.name
+    userid = msg.envelope.user.id
 
     deployment = new Deployment(name, ref, task, env, force, hosts)
 
     unless deployment.isValidApp()
       msg.reply "#{name}? Never heard of it."
+      return
+    unless deployment.isAuthorizedUser(userid)
+      msg.reply "you don't have permission to deploy it (user id: #{userid}) "
       return
     unless deployment.isValidEnv()
       msg.reply "#{name} doesn't seem to have an #{env} environment."
@@ -84,7 +88,7 @@ module.exports = (robot) ->
       msg.reply "#{name} is not allowed to be deployed from this room."
       return
 
-    user = robot.brain.userForId msg.envelope.user.id
+    user = robot.brain.userForId userid
     if user? and user.githubDeployToken?
       deployment.setUserToken(user.githubDeployToken)
 
