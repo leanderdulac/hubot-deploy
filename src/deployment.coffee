@@ -4,6 +4,7 @@ Path      = require "path"
 Version   = require(Path.join(__dirname, "version")).Version
 Octonode  = require("octonode")
 ApiConfig = require(Path.join(__dirname, "api_config")).ApiConfig
+userIdToName = require(Path.join(__dirname, "user_id_map")).userIdToName
 ###########################################################################
 
 class Deployment
@@ -41,6 +42,10 @@ class Deployment
 
   isValidEnv: ->
     @env in @environments
+
+  isAuthorizedUser: (userid) ->
+    username = userIdToName(userid)
+    username in @application['authorized_usernames']
 
   isAllowedRoom: (room) ->
     !@allowedRooms? || room in @allowedRooms
