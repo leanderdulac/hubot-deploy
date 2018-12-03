@@ -4,7 +4,7 @@ Path      = require "path"
 Version   = require(Path.join(__dirname, "version")).Version
 Octonode  = require("octonode")
 ApiConfig = require(Path.join(__dirname, "api_config")).ApiConfig
-userIdToName = require(Path.join(__dirname, "user_id_map")).userIdToName
+userIdToName = require(Path.join(__dirname, "config")).userIdToName
 ###########################################################################
 
 class Deployment
