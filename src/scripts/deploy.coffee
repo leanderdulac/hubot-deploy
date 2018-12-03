@@ -14,6 +14,7 @@ Version       = require(Path.join(__dirname, "..", "version")).Version
 Patterns      = require(Path.join(__dirname, "..", "patterns"))
 Deployment    = require(Path.join(__dirname, "..", "deployment")).Deployment
 Formatters    = require(Path.join(__dirname, "..", "formatters"))
+changelog     = require(Path.join(__dirname, "..", "changelog"))
 
 DeployPrefix   = Patterns.DeployPrefix
 DeployPattern  = Patterns.DeployPattern
@@ -88,23 +89,42 @@ module.exports = (robot) ->
       msg.reply "#{name} is not allowed to be deployed from this room."
       return
 
-    user = robot.brain.userForId userid
-    if user? and user.githubDeployToken?
-      deployment.setUserToken(user.githubDeployToken)
+    changelog.create(
+      deployment.api(),
+      deployment.repository,
+      deployment.ref,
+      userid,
+    )
+    .then (changelog_url) ->
+      msg.reply "Changelog created: #{changelog_url}"
+    .then ->
+      user = robot.brain.userForId userid
+      if user? and user.githubDeployToken?
+        deployment.setUserToken(user.githubDeployToken)
 
-    deployment.user = username
-    deployment.room = msg.message.user.room
+      deployment.user = username
+      deployment.room = msg.message.user.room
 
-    if robot.adapterName == 'flowdock'
-      deployment.thread_id = msg.message.metadata.thread_id
-      deployment.message_id = msg.message.id
+      if robot.adapterName == 'flowdock'
+        deployment.thread_id = msg.message.metadata.thread_id
+        deployment.message_id = msg.message.id
 
-    deployment.adapter = robot.adapterName
+      deployment.adapter = robot.adapterName
 
-    console.log JSON.stringify(deployment.requestBody())
+      console.log JSON.stringify(deployment.requestBody())
 
-    deployment.post (responseMessage) ->
-      msg.reply responseMessage if responseMessage?
+      deployment.post (responseMessage) ->
+        msg.reply responseMessage if responseMessage?
+    .catch (e) ->
+      if (
+        e.body?.documentation_url == 'https://developer.github.com/v3/repos/commits/#compare-two-commits' ||
+        e.body?.documentation_url == 'https://developer.github.com/v3/issues/#create-an-issue'
+      )
+        msg.reply "Error when tried to create the changelog, then I can't deploy. I'm sorry."
+      else
+        msg.reply "Something wrong happened at the deploy!"
+
+      msg.reply JSON.stringify e
 
   ###########################################################################
   # deploy:version
