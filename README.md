@@ -9,7 +9,7 @@
 * Add hubot-deploy to your `package.json` file.
 * Add hubot-deploy to your `external-scripts.json` file.
 * [Configure](docs/configuration.md) your runtime environment to interaction with the GitHub API.
-* Understand how [apps.json](docs/config-file.md) works.
+* Understand how [`apps.json` and `hubot-deploy-config.json`](docs/config-file.md) works.
 * Learn about [ChatOps](docs/chatops.md) deploys.
 
 ## See Also
