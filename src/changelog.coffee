@@ -24,8 +24,9 @@ branchComparison = (api, repository, baseBranch, ref) ->
         url: commit.html_url
         title: getCommitTitle(commit.commit)
 
-post = (api, baseBranch, ref, changes, userid) ->
+post = (api, repository, baseBranch, ref, destination, changes, userid) ->
   ghrepo = api.repo(config.changelogRepository)
+  timestamp = (new Date).toISOString().slice(0, -5)
   username = config.userIdToName(userid)
   body = changes
     .map (change) ->
@@ -34,13 +35,15 @@ post = (api, baseBranch, ref, changes, userid) ->
 
   new Promise (resolve, reject) ->
     ghrepo.createIssue({
-      title: 'Changelog',
+      title: "#{repository} - #{destination} - #{timestamp}",
       body: """
         ### Deploy infos
 
         **Author:** #{username} (#{userid})
         **From branch:** #{ref}
         **Base branch:** #{baseBranch}
+        **Destination:** #{destination}
+        **Timestamp:** #{timestamp}
 
         ### Changelog
 
@@ -53,7 +56,7 @@ post = (api, baseBranch, ref, changes, userid) ->
       resolve(data.html_url)
     )
 
-create = (api, repository, ref, userid) ->
+create = (api, repository, ref, destination, userid) ->
   baseBranch = null
 
   defaultBranch(api, repository)
@@ -69,8 +72,10 @@ create = (api, repository, ref, userid) ->
     .then (changes) ->
       post(
         api,
+        repository,
         baseBranch,
         ref,
+        destination,
         changes,
         userid,
       )
