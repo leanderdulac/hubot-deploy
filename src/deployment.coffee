@@ -4,12 +4,10 @@ Path      = require "path"
 Version   = require(Path.join(__dirname, "version")).Version
 Octonode  = require("octonode")
 ApiConfig = require(Path.join(__dirname, "api_config")).ApiConfig
-userIdToName = require(Path.join(__dirname, "config")).userIdToName
+{ applications, userIdToName } = require(Path.join(__dirname, "config"))
 ###########################################################################
 
 class Deployment
-  @APPS_FILE = process.env['HUBOT_DEPLOY_APPS_JSON'] or "apps.json"
-
   constructor: (@name, @ref, @task, @env, @force, @hosts) ->
     @room             = 'unknown'
     @user             = 'unknown'
@@ -20,11 +18,6 @@ class Deployment
     @environments     = [ "production" ]
     @requiredContexts = null
     @caFile           = Fs.readFileSync(process.env['HUBOT_CA_FILE']) if process.env['HUBOT_CA_FILE']
-
-    try
-      applications = JSON.parse(Fs.readFileSync(@constructor.APPS_FILE).toString())
-    catch
-      throw new Error("Unable to parse your apps.json file in hubot-deploy")
 
     @application = applications[@name]
 
