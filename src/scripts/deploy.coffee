@@ -15,6 +15,7 @@ Patterns      = require(Path.join(__dirname, "..", "patterns"))
 Deployment    = require(Path.join(__dirname, "..", "deployment")).Deployment
 Formatters    = require(Path.join(__dirname, "..", "formatters"))
 changelog     = require(Path.join(__dirname, "..", "changelog"))
+applications  = require(Path.join(__dirname, "..", "config")).applications
 
 DeployPrefix   = Patterns.DeployPrefix
 DeployPattern  = Patterns.DeployPattern
@@ -22,6 +23,17 @@ DeploysPattern = Patterns.DeploysPattern
 
 ###########################################################################
 module.exports = (robot) ->
+  ###########################################################################
+  # show permissions
+  #
+  # Displays who can deploy for each project
+  robot.respond /show\s+permissions/i, (msg) ->
+    for key, value of applications
+      if value.authorized_usernames?.length > 0
+        msg.send "- *#{key}* can be deployed by: #{value.authorized_usernames}"
+      else
+        msg.send "- nobody has permissions to deploy *#{key}*"
+
   ###########################################################################
   # where can i deploy <app>
   #
