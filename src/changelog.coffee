@@ -4,10 +4,19 @@ config = require(Path.join(__dirname, "config"))
 getCommitTitle = (commit) ->
     commit.message.split('\n\n')[0]
 
-branchComparison = (api, repository, ref) ->
+defaultBranch = (api, repository) ->
   ghrepo = api.repo(repository)
   new Promise (resolve, reject) ->
-    ghrepo.compare 'master', ref, (err, data) ->
+    ghrepo.info (err, data) ->
+      if err
+        return reject err
+
+      resolve data.default_branch
+
+branchComparison = (api, repository, baseBranch, ref) ->
+  ghrepo = api.repo(repository)
+  new Promise (resolve, reject) ->
+    ghrepo.compare baseBranch, ref, (err, data) ->
       if err
         return reject err
 
@@ -15,7 +24,7 @@ branchComparison = (api, repository, ref) ->
         url: commit.html_url
         title: getCommitTitle(commit.commit)
 
-post = (api, ref, changes, userid) ->
+post = (api, baseBranch, ref, changes, userid) ->
   ghrepo = api.repo(config.changelogRepository)
   username = config.userIdToName(userid)
   body = changes
@@ -31,7 +40,7 @@ post = (api, ref, changes, userid) ->
 
         **Author:** #{username} (#{userid})
         **From branch:** #{ref}
-        **Base branch:** master
+        **Base branch:** #{baseBranch}
 
         ### Changelog
 
@@ -45,18 +54,26 @@ post = (api, ref, changes, userid) ->
     )
 
 create = (api, repository, ref, userid) ->
-  branchComparison(
-    api,
-    repository,
-    ref,
-  )
-  .then (changes) ->
-    post(
-      api,
-      ref,
-      changes,
-      userid,
-    )
+  baseBranch = null
+
+  defaultBranch(api, repository)
+    .then (defaultBranch) ->
+      baseBranch = defaultBranch
+
+      branchComparison(
+        api,
+        repository,
+        baseBranch,
+        ref,
+      )
+    .then (changes) ->
+      post(
+        api,
+        baseBranch,
+        ref,
+        changes,
+        userid,
+      )
 
 module.exports = {
     create,

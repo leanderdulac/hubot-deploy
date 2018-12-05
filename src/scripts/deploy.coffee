@@ -129,6 +129,7 @@ module.exports = (robot) ->
         msg.reply responseMessage if responseMessage?
     .catch (e) ->
       if (
+        e.body?.documentation_url == 'https://developer.github.com/v3/repos/#get' ||
         e.body?.documentation_url == 'https://developer.github.com/v3/repos/commits/#compare-two-commits' ||
         e.body?.documentation_url == 'https://developer.github.com/v3/issues/#create-an-issue'
       )
