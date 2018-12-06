@@ -101,10 +101,16 @@ module.exports = (robot) ->
       msg.reply "#{name} is not allowed to be deployed from this room."
       return
 
+    destination = if hosts
+      "#{env}/#{hosts}"
+    else
+      env
+
     changelog.create(
       deployment.api(),
       deployment.repository,
       deployment.ref,
+      destination,
       userid,
     )
     .then (changelog_url) ->
