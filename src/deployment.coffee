@@ -1,9 +1,11 @@
-Fs        = require "fs"
-Url       = require "url"
-Path      = require "path"
-Version   = require(Path.join(__dirname, "version")).Version
-Octonode  = require("octonode")
+Fs = require "fs"
+Url = require "url"
+Path = require "path"
+Version = require(Path.join(__dirname, "version")).Version
+Octonode = require("octonode")
 ApiConfig = require(Path.join(__dirname, "api_config")).ApiConfig
+{ PullRequest } = require(Path.join(__dirname, "pull_request"))
+
 { applications, userIdToName } = require(Path.join(__dirname, "config"))
 ###########################################################################
 
@@ -39,6 +41,10 @@ class Deployment
   isAuthorizedUser: (userid) ->
     username = userIdToName(userid)
     username in @application['authorized_usernames']
+
+  getPullRequestState: () ->
+    pullRequest = new PullRequest(@ref, @repository, @api(), @apiConfig())
+    pullRequest.getPullRequestState()
 
   isAllowedRoom: (room) ->
     !@allowedRooms? || room in @allowedRooms
