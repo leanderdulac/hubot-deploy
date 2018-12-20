@@ -1,0 +1,65 @@
+[
+  {
+    "name": "batata",
+    "commit": {
+      "sha": "---",
+      "url": "https://api.github.com/repos/enterprise/my-repo/commits/"
+    }
+  },
+  {
+    "name": "master",
+    "commit": {
+      "sha": "---",
+      "url": "https://api.github.com/repos/enterprise/my-repo/commits/"
+    }
+  },
+  {
+    "name": "one-pr",
+    "commit": {
+      "sha": "---",
+      "url": "https://api.github.com/repos/enterprise/my-repo/commits/"
+    }
+  },
+  {
+    "name": "two-pr",
+    "commit": {
+      "sha": "---",
+      "url": "https://api.github.com/repos/enterprise/my-repo/commits/"
+    }
+  },
+  {
+    "name": "no-pr",
+    "commit": {
+      "sha": "---",
+      "url": "https://api.github.com/repos/enterprise/my-repo/commits/"
+    }
+  },
+  {
+    "name": "clean",
+    "commit": {
+      "sha": "---",
+      "url": "https://api.github.com/repos/enterprise/my-repo/commits/"
+    }
+  },
+  {
+    "name": "dirty",
+    "commit": {
+      "sha": "---",
+      "url": "https://api.github.com/repos/enterprise/my-repo/commits/"
+    }
+  },
+  {
+    "name": "blocked",
+    "commit": {
+      "sha": "---",
+      "url": "https://api.github.com/repos/enterprise/my-repo/commits/"
+    }
+  },
+  {
+    "name": "main-branch",
+    "commit": {
+      "sha": "---",
+      "url": "https://api.github.com/repos/enterprise/my-repo/commits/"
+    }
+  }
+]
