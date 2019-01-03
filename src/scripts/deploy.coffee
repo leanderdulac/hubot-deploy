@@ -16,6 +16,7 @@ Deployment    = require(Path.join(__dirname, "..", "deployment")).Deployment
 Formatters    = require(Path.join(__dirname, "..", "formatters"))
 changelog     = require(Path.join(__dirname, "..", "changelog"))
 applications  = require(Path.join(__dirname, "..", "config")).applications
+pullrequest   = require(Path.join(__dirname, "..", "pull_request"))
 
 DeployPrefix   = Patterns.DeployPrefix
 DeployPattern  = Patterns.DeployPattern
@@ -106,46 +107,69 @@ module.exports = (robot) ->
     else
       env
 
-    changelog.create(
-      deployment.api(),
-      deployment.repository,
-      deployment.ref,
-      destination,
-      userid,
-    )
-    .then (changelog_url) ->
-      msg.reply "Changelog created: #{changelog_url}"
-    .then ->
-      user = robot.brain.userForId userid
-      if user? and user.githubDeployToken?
-        deployment.setUserToken(user.githubDeployToken)
-
-      deployment.user = username
-      deployment.room = msg.message.user.room
-
-      if robot.adapterName == 'flowdock'
-        deployment.thread_id = msg.message.metadata.thread_id
-        deployment.message_id = msg.message.id
-
-      deployment.adapter = robot.adapterName
-
-      console.log JSON.stringify(deployment.requestBody())
-
-      deployment.post (responseMessage) ->
-        msg.reply responseMessage if responseMessage?
-    .catch (e) ->
-      if (
-        e.body?.documentation_url == 'https://developer.github.com/v3/repos/#get' ||
-        e.body?.documentation_url == 'https://developer.github.com/v3/repos/commits/#compare-two-commits' ||
-        e.body?.documentation_url == 'https://developer.github.com/v3/issues/#create-an-issue'
+    startDeployProcess = () ->
+      changelog.create(
+        deployment.api(),
+        deployment.repository,
+        deployment.ref,
+        destination,
+        userid,
       )
-        msg.reply "Error when tried to create the changelog, then I can't deploy. I'm sorry."
-      else
-        msg.reply "Something wrong happened at the deploy!"
+      .then (changelog_url) ->
+        msg.reply "Changelog created: #{changelog_url}"
+      .then ->
+        user = robot.brain.userForId userid
+        if user? and user.githubDeployToken?
+          deployment.setUserToken(user.githubDeployToken)
 
-      msg.reply JSON.stringify e
+        deployment.user = username
+        deployment.room = msg.message.user.room
 
-  ###########################################################################
+        if robot.adapterName == 'flowdock'
+          deployment.thread_id = msg.message.metadata.thread_id
+          deployment.message_id = msg.message.id
+
+        deployment.adapter = robot.adapterName
+
+        console.log JSON.stringify(deployment.requestBody())
+
+        deployment.post (responseMessage) ->
+          msg.reply responseMessage if responseMessage?
+      .catch (e) ->
+        if (
+          e.body?.documentation_url == 'https://developer.github.com/v3/repos/#get' ||
+          e.body?.documentation_url == 'https://developer.github.com/v3/repos/commits/#compare-two-commits' ||
+          e.body?.documentation_url == 'https://developer.github.com/v3/issues/#create-an-issue'
+        )
+          msg.reply "Error when tried to create the changelog, then I can't deploy. I'm sorry."
+        else
+          msg.reply "Something wrong happened at the deploy!"
+
+        msg.reply JSON.stringify e
+
+    deployment.getPullRequestState()
+      .then (state) ->
+        switch state
+          when pullrequest.states.NoPullRequests
+            msg.reply "This branch has no pull request (branch name: #{ref})"
+          when pullrequest.states.TooManyPullRequests
+            msg.reply "This branch has many pull requests (branch name: #{ref})"
+          when pullrequest.states.BlockedPullRequest
+            msg.reply """
+              This branch has a blocked pull request (branch name: #{ref})
+              Possible causes:
+              1. CI failing
+              2. Missing code owners review
+            """
+
+        return state == pullrequest.states.Ok
+      .then (isValid) ->
+        if isValid
+          startDeployProcess()
+      .catch (err) ->
+        console.log err
+
+  ############################################################################
   # deploy:version
   #
   # Useful for debugging
