@@ -43,7 +43,14 @@ class Deployment
     username in @application['authorized_usernames']
 
   getPullRequestState: () ->
-    pullRequest = new PullRequest(@ref, @repository, @api(), @apiConfig())
+    pullRequest = new PullRequest(
+      @application,
+      @ref,
+      @repository,
+      @api(),
+      @apiConfig()
+    )
+
     pullRequest.getPullRequestState()
 
   isAllowedRoom: (room) ->
