@@ -20,7 +20,7 @@ isValidPullRequest = (pullrequest) ->
   return states.Ok
 
 class PullRequest
-  constructor: (@branch, @repository, @request, @config) ->
+  constructor: (@application, @branch, @repository, @request, @config) ->
 
   checkPullRequestMergeableState: (prNumber, resolve, reject) ->
     path = @config.path("repos/#{@repository}/pulls/#{prNumber}")
@@ -81,7 +81,10 @@ class PullRequest
 
   getPullRequestState: () =>
     new Promise (resolve, reject) =>
-      @usingMainBranch resolve, reject
+      if !@application.code_owner_review
+        return resolve states.Ok
+
+      return @usingMainBranch resolve, reject
 
 module.exports = {
   isValidPullRequestList,

@@ -29,7 +29,10 @@ getPullRequestState = (request, branch) ->
   config =
     path: (url) -> url
 
-  pr = new PullRequest(branch, 'batatao', request, config)
+  application =
+    code_owner_review: true
+
+  pr = new PullRequest(application, branch, 'batatao', request, config)
 
   return pr.getPullRequestState()
 
@@ -55,6 +58,16 @@ describe "Branch Pull Request", () ->
       assert.equal(isValidPullRequest(cleanPullRequest), states.Ok)
 
   describe "Integration Tests", () ->
+    it "should return success if the application does not require code owner review", () ->
+      application =
+        code_owner_review: false
+
+      pr = new PullRequest(application)
+
+      pr.getPullRequestState()
+        .then (state) ->
+          assert.equal(state, states.Ok)
+
     it "should return error if the branch has no pull request", () ->
       request = get: (path, params, callback) ->
         response path, callback, 'no-pr'

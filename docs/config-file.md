@@ -18,6 +18,7 @@ It's a javascript object where application aliases are used as the names(keys). 
 | github_token            | A token for creating deployments in the GitHub API specific to the specific repository.|
 | allowed_rooms           | An array of room id's for restricting the deployments to be started only in those rooms.|
 | authorized_usernames    | Who can deploy this application. See `hubot-deploy-config.json` bellow |
+| code_owner_review       | Should this application have a code owner review before deploying |
 
 Any extra parameters will be passed along to GitHub in the `payload` field. This should allow for a decent amount of customization.
 
